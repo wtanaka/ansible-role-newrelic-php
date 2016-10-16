@@ -1,0 +1,7 @@
+---
+- name: download newrelic key
+  command: >
+    wget -O /root/548C16BF.gpg https://download.newrelic.com/548C16BF.gpg
+  args:
+    creates: /root/548C16BF.gpg
+  sudo: yes
