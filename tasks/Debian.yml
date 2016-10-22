@@ -18,6 +18,64 @@
   when: sources_list_result.changed
   sudo: yes
 
-- name: Install newrelic-php5
-  apt: name=newrelic-php5
+- name: Check for application-name
+  command: >
+    grep -A2 "Name: newrelic-php5/application-name" /var/cache/debconf/config.dat
+  changed_when: False
+  ignore_errors: True
+  register: application_name_result
+
+- name: debconf application-name
+  shell: >
+    echo newrelic-php5 newrelic-php5/application-name string
+    {{newrelic_php_application_name}} | debconf-set-selections
   sudo: yes
+  notify:
+    - reconfigure newrelic-php5
+  when: >
+    application_name_result|failed
+    or application_name_result.stdout.find('Value: {{newrelic_php_application_name}}') == -1
+
+- name: Check for license-key
+  command: >
+    grep -A2 "Name: newrelic-php5/license-key" /var/cache/debconf/config.dat
+  changed_when: False
+  ignore_errors: True
+  register: license_key_result
+
+- name: debconf license-key
+  shell: >
+    echo newrelic-php5 newrelic-php5/license-key string
+    {{newrelic_php_license_key}} | debconf-set-selections
+  sudo: yes
+  notify:
+    - reconfigure newrelic-php5
+  when: >
+    license_key_result|failed
+    or license_key_result.stdout.find("Value: {{newrelic_php_license_key}}") == -1
+
+# debconf only works for the initial installation of the package, even
+# when you run dpkg-reconfigure, so we try to catch a few cases
+
+- stat: path=/etc/php/7.0/mods-available/newrelic.ini
+  register: st
+
+- name: handle config updates for ubuntu/php7
+  sudo: True
+  lineinfile: >
+    dest=/etc/php/7.0/mods-available/newrelic.ini
+    line='newrelic.license = "{{newrelic_php_license_key}}"'
+    regexp='^newrelic.license ='
+  notify:
+    - reconfigure newrelic-php5
+  when: st.stat.exists
+
+- name: handle config updates for ubuntu/php7
+  sudo: True
+  lineinfile: >
+    dest=/etc/php/7.0/mods-available/newrelic.ini
+    line='newrelic.appname = "{{newrelic_php_application_name}}"'
+    regexp='^newrelic.appname ='
+  notify:
+    - reconfigure newrelic-php5
+  when: st.stat.exists

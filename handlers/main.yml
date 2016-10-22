@@ -1,0 +1,4 @@
+---
+- name: reconfigure newrelic-php5
+  command: dpkg-reconfigure -f noninteractive newrelic-php5
+  sudo: yes
