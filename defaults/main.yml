@@ -1,3 +1,4 @@
 ---
 newrelic_php_application_name: "default wtanaka.newrelic-php app"
 newrelic_php_license_key: "YOUR_LICENSE_HERE_YOUR_LICENSE_HERE_YOUR"
+newrelic_php_binary: php
