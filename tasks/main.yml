@@ -21,4 +21,4 @@
     NR_INSTALL_SILENT=y
     NR_INSTALL_KEY={{newrelic_php_license_key}}
     newrelic-install install
-  when: phpinfo|success and "'newrelic' not in phpinfo.stdout"
+  when: phpinfo|success and 'newrelic' not in phpinfo.stdout
