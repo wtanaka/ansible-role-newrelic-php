@@ -1,9 +1,16 @@
 ---
 - include: get_key.yml
 
+- name: optimization -- short-circuit slow call to apt_key
+  sudo: yes
+  command: apt-key list
+  register: apt_key_list
+  changed_when: False
+
 - name: add newrelic key to apt-key
   apt_key: file=/root/548C16BF.gpg
   sudo: yes
+  when: "'548C16BF' not in apt_key_list.stdout"
 
 - name: sources.list
   template: >
