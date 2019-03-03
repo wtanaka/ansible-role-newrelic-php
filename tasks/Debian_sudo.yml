@@ -1,13 +1,15 @@
 ---
-- include: get_key.yml
+- include: get_key_sudo.yml
 
 - name: optimization -- short-circuit slow call to apt_key
+  sudo: yes
   command: apt-key list
   register: apt_key_list
   changed_when: False
 
 - name: add newrelic key to apt-key
   apt_key: file=/root/548C16BF.gpg
+  sudo: yes
   when: "'548C16BF' not in apt_key_list.stdout"
 
 - name: sources.list
@@ -16,10 +18,12 @@
     dest=/etc/apt/sources.list.d/newrelic.list
     force=no
   register: sources_list_result
+  sudo: yes
 
 - name: apt-get update
   apt: update_cache=true cache_valid_time=0
   when: sources_list_result.changed
+  sudo: yes
 
 - name: Check for application-name
   command: >
@@ -32,6 +36,7 @@
   shell: >
     echo newrelic-php5 newrelic-php5/application-name string
     {{newrelic_php_application_name}} | debconf-set-selections
+  sudo: yes
   notify:
     - reconfigure newrelic-php5
   when: >
@@ -49,6 +54,7 @@
   shell: >
     echo newrelic-php5 newrelic-php5/license-key string
     {{newrelic_php_license_key}} | debconf-set-selections
+  sudo: yes
   notify:
     - reconfigure newrelic-php5
   when: >
@@ -62,6 +68,7 @@
   register: st
 
 - name: handle config updates for ubuntu/php7
+  sudo: True
   lineinfile: >
     dest=/etc/php/7.0/mods-available/newrelic.ini
     line='newrelic.license = "{{newrelic_php_license_key}}"'
@@ -71,6 +78,7 @@
   when: st.stat.exists
 
 - name: handle config updates for ubuntu/php7
+  sudo: True
   lineinfile: >
     dest=/etc/php/7.0/mods-available/newrelic.ini
     line='newrelic.appname = "{{newrelic_php_application_name}}"'

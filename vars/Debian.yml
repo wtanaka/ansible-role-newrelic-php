@@ -1,2 +1,3 @@
 ---
-package_name: newrelic-php5
+package_names:
+- newrelic-php5

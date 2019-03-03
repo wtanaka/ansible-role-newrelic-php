@@ -1,0 +1,16 @@
+---
+- name: Check for newrelic installation
+  command: "{{newrelic_php_binary}} -i"
+  register: phpinfo
+  changed_when: False
+  failed_when: False
+
+- name: Run newrelic-install
+  sudo: True
+  command: >
+    env
+    NR_INSTALL_SILENT=y
+    NR_INSTALL_KEY={{newrelic_php_license_key}}
+    newrelic-install install
+  when: phpinfo and 'newrelic' not in phpinfo.stdout
+  changed_when: False
